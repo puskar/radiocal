@@ -23,7 +23,7 @@ def radiocal(show):
     tz= ZoneInfo("America/New_York")
 
     cal = Calendar()
-    cal.add('X-WR-CALNAME', 'WOBC calendar')
+    cal.add('X-WR-CALNAME', f'"WOBC" {show} "calendar"')
     cal.add('prodid', '-//WOBC//WOBC Calendar//EN')
     cal.add('version', '2.0')
     cal.add('X-WR-TIMEZONE', 'America/New_York')
@@ -33,16 +33,15 @@ def radiocal(show):
 
     x=0
     for col in df.columns:
-        y=0
 
-        for item in df[col]:
-            showtime = df[col].index[y]
+        #for item in df[col]:
+        for y, item in enumerate(df[col]):
+            showtime = df.index[y]
 
             if showtime == "Midnight":
                 showtime = "12am"
             elif showtime == "Noon":
                 showtime = "12pm"
-
             if show == "" or show.lower() in item.lower():
             #print(f'col={col}')
             #print(f'Hour: {showtime:>04} Show: {item}')
@@ -65,7 +64,6 @@ def radiocal(show):
             #print(f'show_date={show_date}')
             #print("\r")
 
-            y += 1
         x += 1
         response = make_response(cal.to_ical().decode("utf-8").replace('\r\n', '\n').strip())
         response.headers['Content-Type'] = 'text/calendar'
