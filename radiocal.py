@@ -68,7 +68,7 @@ def radiocal(show):
         response = make_response(cal.to_ical().decode("utf-8").replace('\r\n', '\n').strip())
         response.headers['Content-Type'] = 'text/calendar'
         #response.headers['Content-Disposition'] = f'inline; filename="{part1.title() or "WOBC"}.ics"'
-    
+
 
     return response
 
