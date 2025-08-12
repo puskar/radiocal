@@ -34,7 +34,6 @@ def radiocal(show):
     x=0
     for col in df.columns:
 
-        #for item in df[col]:
         for y, item in enumerate(df[col]):
             showtime = df.index[y]
 
@@ -43,8 +42,6 @@ def radiocal(show):
             elif showtime == "Noon":
                 showtime = "12pm"
             if show == "" or show.lower() in item.lower():
-            #print(f'col={col}')
-            #print(f'Hour: {showtime:>04} Show: {item}')
 
                 sdate = sunday + timedelta(days=x)
                 #print(f'sdate={sdate}')
@@ -61,8 +58,6 @@ def radiocal(show):
                 cal.add_component(event)
             else:
                 continue
-            #print(f'show_date={show_date}')
-            #print("\r")
 
         x += 1
         response = make_response(cal.to_ical().decode("utf-8").replace('\r\n', '\n').strip())
