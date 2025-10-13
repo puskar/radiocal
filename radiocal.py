@@ -4,19 +4,28 @@ from icalendar import Calendar, Event
 from datetime import date, datetime, time, timedelta, timezone
 from zoneinfo import ZoneInfo
 from flask import Flask, make_response, render_template
+import threading
+import time
 
-url = "https://wobc.pairsite.com/?O=&I=&P=16&InfoID=3&P=17&B=Schedule"
-file_url = "file:////Users/puskar/workspace/github/odds_ends/radiocal/radio.html"
+def get_schedule_url():
+    url = "https://wobc.pairsite.com/?O=&I=&P=16&InfoID=3&P=17&B=Schedule"
+    #file_url = "file:////Users/puskar/workspace/github/odds_ends/radiocal/radio.html"
+    return url
+
+url = get_schedule_url()
+
+timer = threading.Timer(86400, get_schedule_url)
+timer.start()
 
 # Cache the DataFrame at startup
 table = pd.read_html(url, header=0, index_col=0)
-df_cached = table[0]
+df = table[0]
 
 flask_app = Flask("radiocal")
 @flask_app.route('/radiocal/', methods=['GET'], defaults={'show': ''})
 @flask_app.route("/radiocal/<string:show>", methods=['GET'])
 def radiocal(show):
-    df = df_cached
+    #df = df_cached
 
     today = datetime.now()
     today = today.replace(tzinfo=ZoneInfo("America/New_York"))
