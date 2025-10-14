@@ -1,19 +1,20 @@
-import pandas as pd
-import uuid
+from datetime import datetime, timedelta
+from flask import Flask, make_response
 from icalendar import Calendar, Event
-from datetime import date, datetime, time, timedelta, timezone
-from zoneinfo import ZoneInfo
-from flask import Flask, make_response, render_template
+import pandas as pd
+import re
+import requests
 import threading
-import time
+import uuid
+from zoneinfo import ZoneInfo
 
 def get_schedule_url():
-    url = "https://wobc.pairsite.com/?O=&I=&P=16&InfoID=3&P=17&B=Schedule"
+    r = requests.get("https://wobc.pairsite.com/")
+    url = re.search('http.*B=Schedule', r.text).group()
     #file_url = "file:////Users/puskar/workspace/github/odds_ends/radiocal/radio.html"
     return url
 
 url = get_schedule_url()
-
 timer = threading.Timer(86400, get_schedule_url)
 timer.start()
 
