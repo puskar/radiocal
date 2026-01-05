@@ -12,10 +12,11 @@ def get_schedule_url():
     r = requests.get("https://wobc.pairsite.com/")
     url = re.search('http.*B=Schedule', r.text).group()
     #file_url = "file:////Users/puskar/workspace/github/odds_ends/radiocal/radio.html"
+    print(f"Retrieved schedule URL: {url}")
     return url
 
 url = get_schedule_url()
-timer = threading.Timer(86400, get_schedule_url)
+timer = threading.Timer(60, get_schedule_url)
 timer.start()
 
 # Cache the DataFrame at startup
@@ -33,7 +34,7 @@ def radiocal(show):
     tz= ZoneInfo("America/New_York")
 
     cal = Calendar()
-    cal.add('X-WR-CALNAME', f'"WOBC" {show} "calendar"')
+    cal.add('X-WR-CALNAME', f'WOBC {show} calendar')
     cal.add('prodid', '-//WOBC//WOBC Calendar//EN')
     cal.add('version', '2.0')
     cal.add('X-WR-TIMEZONE', 'America/New_York')
@@ -61,6 +62,7 @@ def radiocal(show):
                 event = Event()
                 #event['dtstart'] = show_date.strftime('%Y%m%dT%H%M00')
                 event.add('dtstart', show_date)
+                event.add('rrule', 'FREQ=WEEKLY;COUNT=3')
                 event.add('uid', str(uuid.uuid1()) + "@puskar.net")
                 event.add('dtstamp', datetime.now(tz=ZoneInfo("UTC")))
                 event.add('summary', item)
