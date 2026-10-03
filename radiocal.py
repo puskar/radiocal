@@ -62,6 +62,8 @@ def radiocal(show):
         cal.add('X-WR-CALNAME', 'WOBC Calendar')
         cal.add('name', 'WOBC Calendar')
 
+    cal.add_missing_timezones()
+
     ics = cal.to_ical().decode("utf-8").replace('\r\n', '\n').strip()
     response = make_response(ics)
     response.headers['Content-Type'] = 'text/calendar; charset=utf-8'
