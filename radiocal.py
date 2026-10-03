@@ -1,84 +1,71 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 from flask import Flask, make_response
 from icalendar import Calendar, Event
-import pandas as pd
 import re
 import requests
-import threading
 import uuid
 from zoneinfo import ZoneInfo
 
-def get_schedule_url():
-    r = requests.get("https://wobc.pairsite.com/")
-    url = re.search('http.*B=Schedule', r.text).group()
-    #file_url = "file:////Users/puskar/workspace/github/odds_ends/radiocal/radio.html"
-    print(f"Retrieved schedule URL: {url}")
-    return url
+url = "https://embed.creek.org/api/studio/schedule?studioId=84"
 
-url = get_schedule_url()
-timer = threading.Timer(60, get_schedule_url)
-timer.start()
+r = requests.get(url)
+shows = r.json()
 
-# Cache the DataFrame at startup
-table = pd.read_html(url, header=0, index_col=0)
-df = table[0]
+def make_dt_time(date_time):
+    tz = ZoneInfo("America/New_York")
+    dt = datetime.strptime(date_time, "%Y-%m-%dT%H:%M:%S.%fZ")
+    return dt.replace(tzinfo=ZoneInfo("UTC")).astimezone(tz)
+
+def rrule_clean(rrule_in):
+    dtstart, rrule = (rrule_in).split("\n")
+    rrule = rrule.split(":")[1]
+    return rrule
+
 
 flask_app = Flask("radiocal")
 @flask_app.route('/radiocal/', methods=['GET'], defaults={'show': ''})
 @flask_app.route("/radiocal/<string:show>", methods=['GET'])
 def radiocal(show):
-    #df = df_cached
-
-    today = datetime.now()
-    today = today.replace(tzinfo=ZoneInfo("America/New_York"))
-    tz= ZoneInfo("America/New_York")
-
     cal = Calendar()
-    cal.add('X-WR-CALNAME', f'WOBC {show} calendar')
+    #cal.add('X-WR-CALNAME', f'WOBC Calendar')
+    #cal.add('name', 'WOBC Calendar')
     cal.add('prodid', '-//WOBC//WOBC Calendar//EN')
     cal.add('version', '2.0')
-    cal.add('X-WR-TIMEZONE', 'America/New_York')
-    cal.add('tzid', tz)
 
-    sunday = today - timedelta(days=today.isoweekday())
+    showcounter = 0
 
-    x=0
-    for col in df.columns:
+    for entry in shows:
+        if entry == "" or show.lower() in entry["time"]["show"]["title"].lower():
 
-        for y, item in enumerate(df[col]):
-            showtime = df.index[y]
+            showname = entry["time"]["show"]["title"]
 
-            if showtime == "Midnight":
-                showtime = "12am"
-            elif showtime == "Noon":
-                showtime = "12pm"
-            if show == "" or show.lower() in item.lower():
+            event = Event()
+            event.add('rrule', rrule_clean(entry["time"]["rrule"]))
+            event.add('dtstart', make_dt_time(entry["time"]["start"]))
+            event.add('dtend', make_dt_time(entry["time"]["end"]))
+            event.add('summary', entry["time"]["show"]["title"])
+            event.add('description', entry["time"]["show"]["description"])
+            event.add('url', f"https://wobcfm.org/shows/{entry['time']['show']['name']}", parameters={"value": "URI"})
+            event.add('dtstamp', make_dt_time(entry["time"]["show"]["updated_at"]))
+            event.add('tzid', 'America/New_York')
+            event.add('uid', str(uuid.uuid1()) + "@puskar.net")
+            cal.add_component(event)
 
-                sdate = sunday + timedelta(days=x)
-                #print(f'sdate={sdate}')
-                stime= datetime.strptime(f'{showtime:>04}', "%I%p")
-                #print(f'stime={stime}' )
-                show_date = datetime.combine(sdate, stime.time(), tzinfo=tz)
-                event = Event()
-                #event['dtstart'] = show_date.strftime('%Y%m%dT%H%M00')
-                event.add('dtstart', show_date)
-                event.add('rrule', 'FREQ=WEEKLY;COUNT=3')
-                event.add('uid', str(uuid.uuid1()) + "@puskar.net")
-                event.add('dtstamp', datetime.now(tz=ZoneInfo("UTC")))
-                event.add('summary', item)
-                event.add('dtend', show_date + timedelta(hours=1))
-                cal.add_component(event)
-            else:
-                continue
+            showcounter += 1
+        else:
+            continue
 
-        x += 1
-        response = make_response(cal.to_ical().decode("utf-8").replace('\r\n', '\n').strip())
-        response.headers['Content-Type'] = 'text/calendar'
-        #response.headers['Content-Disposition'] = f'inline; filename="{part1.title() or "WOBC"}.ics"'
+    if showcounter == 1:
+        cal.add('X-WR-CALNAME', f'WOBC {showname} Calendar')
+        cal.add('name', f'WOBC {showname} Calendar')
+    else:
+        cal.add('X-WR-CALNAME', 'WOBC Calendar')
+        cal.add('name', 'WOBC Calendar')
 
-
+    ics = cal.to_ical().decode("utf-8").replace('\r\n', '\n').strip()
+    response = make_response(ics)
+    response.headers['Content-Type'] = 'text/calendar; charset=utf-8'
     return response
-
 
 if __name__ == "__main__":
     flask_app.run(host="0.0.0.0", port=8090, debug=True)
