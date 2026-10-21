@@ -7,7 +7,7 @@ Type=simple
 Restart=always
 RestartSec=1
 User=puskar
-ExecStart=/home/puskar/radiocal/.venv/bin/python /home/puskar/radiocal/radiocal.py
+ExecStart=/home/puskar/radiocal/.venv/bin/python /home/puskar/radiocal/main.py
 StandardOutput=journal+console
 StandardError=journal+console
 
