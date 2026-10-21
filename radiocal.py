@@ -1,3 +1,5 @@
+### This file is deprecated and is no longer used.
+
 from datetime import datetime
 from flask import Flask, make_response
 from icalendar import Calendar, Event
