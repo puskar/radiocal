@@ -1,5 +1,14 @@
 ## radiocal
 
-This app scrapes the [WOBC](https://wobc.pairsite.com/?O=&I=&P=1&InfoID=3&P=17&B=Schedule) schedule page and creates a calendar of the radio shows for the week. It uses Flask to provide a web service that can be subscribed from any calendar app. It runs at the endpoint```/radiocal/```
+Create calendar subscription feeds from radio station sources.
 
-Appending a string will perform a case insensitive match for shows that contain the string, e.g. ```/radiocal/ha``` will show the calendar for "Chains and Things" and "Chameleon Radio ⊳".
+It uses Flask to provide a web service that can be subscribed from any calendar app. It runs at the endpoint```/radiocal/```
+
+Currently supported stations are:
+
+WNPR - [Connecticut Public Radio](https://ctpublic.org)     [feed](https://api.puskar.net/radiocal/wnpr/)  
+WNYC - [New York Public Radio](https://wnyc.org)     [feed](https://api.puskar.net/radiocal/wnyc/)  
+WOBC - [Oberlin College Radio](https://wobcfm.org)     [feed](https://api.puskar.net/radiocal/wobc/)  
+
+Appending a string will perform a case insensitive match for shows that contain the string, e.g. ```/radiocal/wobc/ha``` will show the calendar for "Chains and Things" and "Chameleon Radio ⊳".  
+```/radiocal/wnpr/colin``` will show the calendar for "The Colin McEnroe Show".
