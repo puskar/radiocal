@@ -33,7 +33,7 @@ def radiocal(show):
     cal.add("prodid", "-//WOBC//WOBC Calendar//EN")
     cal.add("version", "2.0")
 
-    showcounter = 0
+    showlist = set()
 
     for entry in shows:
         if entry == "" or show.lower() in entry["time"]["show"]["title"].lower():
@@ -55,12 +55,12 @@ def radiocal(show):
             event.add("uid", str(uuid.uuid1()) + "@puskar.net")
             cal.add_component(event)
 
-            showcounter += 1
+            showlist.add(showname)
         else:
             continue
 
-    if showcounter == 1:
-        cal.add("X-WR-CALNAME", f"WOBC {showname} Calendar")
+    if len(showlist) == 1:
+        cal.add("X-WR-CALNAME", f"WOBC {showlist} Calendar")
         cal.add("name", f"WOBC {showname} Calendar")
     else:
         cal.add("X-WR-CALNAME", "WOBC Calendar")
