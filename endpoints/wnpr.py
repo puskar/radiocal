@@ -49,11 +49,11 @@ def radiocal(show):
             showname = entry["episode"]["programName"]
 
             event = Event()
-            # event.add("rrule", rrule_clean(entry["time"]["rrule"]))
             event.add("dtstart", make_dt_time(entry["episode"]["start"]["utc"]))
             event.add("dtend", make_dt_time(entry["episode"]["end"]["utc"]))
             event.add("summary", entry["episode"]["programName"])
-            # event.add("description", entry["episode"]["longDescription"])
+            if "programDescription" in entry:
+                event.add("description", entry["programDescription"])
             if "programLink" in entry:
                 event.add(
                     "url",
@@ -62,8 +62,11 @@ def radiocal(show):
                 )
             event.add("dtstamp", make_dt_time(entry["episode"]["start"]["utc"]))
             event.add("tzid", "America/New_York")
-            event.add("uid", str(uuid.uuid5(uuid.NAMESPACE_DNS, (str(event.DTSTART) + showname))) + "@puskar.net")
-
+            event.add(
+                "uid",
+                str(uuid.uuid5(uuid.NAMESPACE_DNS, (str(event.DTSTART) + showname)))
+                + "@puskar.net",
+            )
 
             cal.add_component(event)
 

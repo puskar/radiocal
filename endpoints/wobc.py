@@ -52,7 +52,11 @@ def radiocal(show):
             )
             event.add("dtstamp", make_dt_time(entry["time"]["show"]["updated_at"]))
             event.add("tzid", "America/New_York")
-            event.add("uid", str(uuid.uuid1()) + "@puskar.net")
+            event.add(
+                "uid",
+                str(uuid.uuid5(uuid.NAMESPACE_DNS, (str(event.DTSTART) + showname)))
+                + "@puskar.net",
+            )
             cal.add_component(event)
 
             showlist.add(showname)
