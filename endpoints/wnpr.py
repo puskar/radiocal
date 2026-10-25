@@ -1,21 +1,25 @@
-from datetime import datetime, timedelta
-from flask import make_response, Blueprint
-from icalendar import Calendar, Event
-import requests
 import uuid
+from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
-url = "https://cadence.nprstations.org//api/cadence/widget/"
-payload = {
-    "channelId": "52b2d312-4f33-4d4e-a818-60330d61a4dc",
-    "startDate": (datetime.today() - timedelta(days=3)).strftime("%Y-%m-%d"),
-    "endDate": (datetime.today() + timedelta(days=7)).strftime("%Y-%m-%d"),
-    "from": 0,
-    "size": 10000,
-}
+import requests
+from flask import Blueprint, make_response
+from icalendar import Calendar, Event
 
-r = requests.post(url, json=payload)
-shows = r.json()
+
+def get_shows():
+    """Fetch the list of shows from the NPR Cadence API."""
+    url = "https://cadence.nprstations.org//api/cadence/widget/"
+    payload = {
+        "channelId": "52b2d312-4f33-4d4e-a818-60330d61a4dc",
+        "startDate": (datetime.today() - timedelta(days=3)).strftime("%Y-%m-%d"),
+        "endDate": (datetime.today() + timedelta(days=7)).strftime("%Y-%m-%d"),
+        "from": 0,
+        "size": 10000,
+    }
+
+    r = requests.post(url, json=payload)
+    return r.json()
 
 
 def make_dt_time(date_time):
@@ -38,6 +42,7 @@ wnpr_bp = Blueprint("wnpr", __name__)
 @wnpr_bp.route("/wnpr/", methods=["GET"], defaults={"show": ""})
 @wnpr_bp.route("/wnpr/<string:show>", methods=["GET"])
 def radiocal(show):
+    shows = get_shows()
     cal = Calendar()
     cal.add("prodid", "-//WNPR//WNPR Calendar//EN")
     cal.add("version", "2.0")

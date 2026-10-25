@@ -1,14 +1,18 @@
-from datetime import datetime
-from flask import make_response, Blueprint
-from icalendar import Calendar, Event
-import requests
 import uuid
+from datetime import datetime
 from zoneinfo import ZoneInfo
 
-url = "https://wnyc.org/api/schedule/wnyc-fm939"
+import requests
+from flask import Blueprint, make_response
+from icalendar import Calendar, Event
 
-r = requests.get(url)
-shows = r.json()
+
+def get_shows():
+    """Fetch the list of shows from the WNYC API."""
+    url = "https://wnyc.org/api/schedule/wnyc-fm939"
+
+    r = requests.get(url)
+    return r.json()
 
 
 def make_dt_time(date_time):
@@ -31,6 +35,7 @@ wnyc_bp = Blueprint("wnyc", __name__)
 @wnyc_bp.route("/wnyc/", methods=["GET"], defaults={"show": ""})
 @wnyc_bp.route("/wnyc/<string:show>", methods=["GET"])
 def radiocal(show):
+    shows = get_shows()
     cal = Calendar()
     cal.add("prodid", "-//WNYC//WNYC Calendar//EN")
     cal.add("version", "2.0")
